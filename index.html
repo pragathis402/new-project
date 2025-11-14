@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Enhanced Dynamic Code Generator — Mobile Friendly</title>
+
+  <style>
+    /* -------------------------
+       Base / Animated Gradient
+       ------------------------- */
+    :root{
+      --glass-bg: rgba(255,255,255,0.12);
+      --panel-bg: rgba(255,255,255,0.92);
+      --accent-1: #ff6b6b;
+      --accent-2: #ffa36c;
+      --accent-3: #6b5b95;
+      --accent-4: #88d3ce;
+      --accent-5: #4ecdc4;
+      --glass-border: rgba(255,255,255,0.22);
+      --shadow-1: 0 10px 30px rgba(0,0,0,0.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color:#222;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      background: linear-gradient(-45deg,var(--accent-1),var(--accent-2),var(--accent-3),var(--accent-4),var(--accent-5));
+      background-size:400% 400%;
+      animation: gradientBG 15s ease infinite;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:18px;
+      gap:18px;
+      position:relative;
+      overflow-x:hidden;
+    }
+
+    @keyframes gradientBG{
+      0%{background-position:0% 50%}
+       @50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      body{animation:none}
+      .particle{animation:none}
+    }
+
+    /* -------------------------
+       Particles
+       ------------------------- */
+    .particles{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .particle{
+      position:absolute;
+      background:rgba(255,255,255,0.22);
+      border-radius:50%;
+      mix-blend-mode:screen;
+      animation: float 18s linear infinite;
+      will-change: transform, opacity;
+      opacity:0.9;
+      filter:blur(1px);
+    }
+    @keyframes float{
+      0%{transform:translateY(0) translateX(0) rotate(0deg)}
+      100%{transform:translateY(-1200px) translateX(420px) rotate(720deg)}
+    }
+
+    /* -------------------------
+       Header
+       ------------------------- */
+    header{
+      position:relative;
+      z-index:2;
+      text-align:center;
+      color:#fff;
+      text-shadow:0 2px 10px rgba(0,0,0,0.25);
+    }
+    header h1{
+      margin:0;
+      font-size:1.6rem;
+      letter-spacing:0.6px;
+      font-weight:800;
+    }
+    header p{
+      margin:6px 0 0;
+      opacity:0.9;
+      font-weight:600;
+    }
+
+    /* -------------------------
+       Input Section (glass)
+       ------------------------- */
+    .input-section{
+      z-index:2;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      padding:14px;
+      background:var(--glass-bg);
+      border-radius:14px;
+      box-shadow:var(--shadow-1);
+      border:1px solid var(--glass-border);
+      backdrop-filter: blur(8px) saturate(120%);
+    }
+    .input-section input[type="text"]{
+      width:420px;
+      max-width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:none;
+      font-size:15px;
+      background:rgba(255,255,255,0.98);
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .btn{
+      padding:12px 16px;
+      border-radius:10px;
+      border:none;
+      font-weight:700;
+      cursor:pointer;
+      min-width:120px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:transform .18s ease, box-shadow .18s ease;
+      box-shadow:0 8px 20px rgba(0,0,0,0.12);
+      color:#fff;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:0.6; cursor:not-allowed; transform:none}
+
+    .generate-btn{background:linear-gradient(135deg,#007bff,#0056b3)}
+    .ai-btn{background:linear-gradient(135deg,#6f42c1,#5a2d91)}
+    .est-btn{background:linear-gradient(135deg,#20c997,#17a673)}
+    .clear-btn{background:linear-gradient(135deg,#ffc107,#e0a800)}
+
+    /* -------------------------
+       Responsive Grid / Panels
+       ------------------------- */
+    .container{
+      z-index:2;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:start;
+      width:100%;
+    }
+
+    .panel{
+      background:var(--panel-bg);
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:var(--shadow-1);
+      border:1px solid rgba(0,0,0,0.05);
+      display:flex;
+      flex-direction:column;
+      min-height:160px;
+    }
+    .panel h3{
+      margin:0;
+      padding:12px 14px;
+      background:linear-gradient(90deg, rgba(0,0,0,0.06), transparent);
+      font-size:1rem;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#111;
+    }
+    .panel .body{
+      padding:12px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    textarea.code{
+      width:100%;
+      min-height:240px;
+      max-height:52vh;
+      resize:vertical;
+      padding:12px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size:13px;
+      line-height:1.5;
+      border-radius:8px;
+      border:1px solid rgba(0,0,0,0.06);
+      background:#f8f9fa;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .copy-row{
+      display:flex;
+      gap:8px;
+      margin-top:auto;
+    }
+    .copyBtn{
+      flex:1;
+      padding:10px;
+      border-radius:8px;
+      border:none;
+      font-weight:700;
+      cursor:pointer;
+      background:linear-gradient(135deg,#28a745,#218838);
+      color:#fff;
+      transition:transform .12s ease;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);
+    }
+
+    /* Preview frame styling */
+    #previewFrame{
+      width:100%;
+      height:320px;
+      border:none;
+      border-radius:8px;
+      background:white;
+      box-shadow:inset 0 1px 0 rgba(0,0,0,0.04);
+    }
+
+    /* Footer */
+    footer{
+      z-index:2;
+      text-align:center;
+      color:#fff;
+      font-weight:600;
+      padding:12px 8px;
+      background:rgba(0,0,0,0.18);
+      border-radius:10px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:9999;
+      padding:12px 18px;
+      border-radius:10px;
+      background:#333;
+      color:#fff;
+      font-weight:700;
+      transform:translateY(20px);
+      opacity:0;
+      transition:all .28s ease;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    }
+    .toast.show{opacity:1; transform:translateY(0)}
+
+    /* -------------------------
+       Responsive Adjustments
+       ------------------------- */
+    @media (max-width:900px){
+      .container{grid-template-columns:1fr}
+      textarea.code{min-height:200px}
+      #previewFrame{height:280px}
+    }
+
+    @media (max-width:480px){
+      header h1{font-size:1.25rem}
+      .input-section{padding:12px; gap:8px}
+      .btn{min-width:96px; padding:10px}
+      .particle{opacity:0.65}
+      .particles{z-index:0}
+      .panel{border-radius:12px}
+      textarea.code{font-size:13px; min-height:180px}
+      #previewFrame{height:220px}
+    }
+
+    /* small performance tweak: reduce number of particles on mobile using media query + JS */
+  </style>
+</head>
+<body>
+  <!-- Particles container -->
+  <div id="particles" class="particles" aria-hidden="true"></div>
+
+  <header>
+    <h1>Code Generator</h1>
+  </header>
+
+  <div class="input-section" role="region" aria-label="Controls">
+    <input id="topicInput" type="text" placeholder="Enter topic (e.g. landing page for a coffee shop)" aria-label="Topic" />
+    <div class="controls" role="group" aria-label="Actions">
+      <button id="generateBtn" class="btn generate-btn">Generate Code</button>
+      <button id="aiAssistantBtn" class="btn ai-btn">AI Assistant</button>
+      <button id="estimationBtn" class="btn est-btn">Project Estimation</button>
+      <button id="clearBtn" class="btn clear-btn">Clear</button>
+    </div>
+  </div>
+
+  <main class="container" role="main">
+    <section class="panel" aria-labelledby="htmlTitle">
+      <h3 id="htmlTitle">HTML</h3>
+      <div class="body">
+        <textarea id="htmlCode" class="code" readonly placeholder="HTML will appear here..."></textarea>
+        <div class="copy-row"><button class="copyBtn" data-target="htmlCode">Copy HTML</button></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="cssTitle">
+      <h3 id="cssTitle">CSS</h3>
+      <div class="body">
+        <textarea id="cssCode" class="code" readonly placeholder="CSS will appear here..."></textarea>
+        <div class="copy-row"><button class="copyBtn" data-target="cssCode">Copy CSS</button></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="jsTitle">
+      <h3 id="jsTitle">JavaScript</h3>
+      <div class="body">
+        <textarea id="jsCode" class="code" readonly placeholder="JavaScript will appear here..."></textarea>
+        <div class="copy-row"><button class="copyBtn" data-target="jsCode">Copy JS</button></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="previewTitle">
+      <h3 id="previewTitle">Preview</h3>
+      <div class="body">
+        <iframe id="previewFrame" title="Live preview"></iframe>
+        <div class="copy-row">
+          <button id="copyPreviewBtn" class="copyBtn" data-target="previewFrame">Copy Rendered HTML</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2025 Dynamic Code Generator | All Rights Reserved</footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // -------------------------
+    // Cached DOM refs
+    // -------------------------
+    const topicInput = document.getElementById('topicInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const htmlCode = document.getElementById('htmlCode');
+    const cssCode = document.getElementById('cssCode');
+    const jsCode = document.getElementById('jsCode');
+    const copyButtons = document.querySelectorAll('.copyBtn');
+    const particlesContainer = document.getElementById('particles');
+    const toast = document.getElementById('toast');
+    const aiAssistantBtn = document.getElementById('aiAssistantBtn');
+    const estimationBtn = document.getElementById('estimationBtn');
+    const previewFrame = document.getElementById('previewFrame');
+    const copyPreviewBtn = document.getElementById('copyPreviewBtn');
+    const clearBtn = document.getElementById('clearBtn'); // Added missing reference
+
+    // -------------------------
+    // Helper: show toast
+    // -------------------------
+    function showToast(message, timeout = 2500){
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(()=> toast.classList.remove('show'), timeout);
+    }
+
+    // -------------------------
+    // Particles generator (fewer on mobile)
+    // -------------------------
+    function createParticles(){
+      const isSmall = window.matchMedia('(max-width:480px)').matches;
+      const count = isSmall ? 12 : 28;
+      // remove previous
+      particlesContainer.innerHTML = '';
+      for(let i=0;i<count;i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = (Math.random()*18)+4; // 4-22
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.left = `${Math.random()*110}%`;
+        p.style.bottom = `${-Math.random()*120}px`;
+        p.style.opacity = 0.35 + Math.random()*0.7;
+        p.style.animationDuration = `${12 + Math.random()*14}s`;
+        p.style.animationDelay = `${Math.random()*6}s`;
+        particlesContainer.appendChild(p);
+      }
+    }
+    createParticles();
+    window.addEventListener('resize', () => {
+      // recreate particles on resize to respect mobile/desktop counts
+      // throttle to avoid excessive calls
+      clearTimeout(window._particleResize);
+      window._particleResize = setTimeout(createParticles, 250);
+    });
+
+    // -------------------------
+    // Copy functionality
+    // -------------------------
+    async function copyText(text){
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(text);
+        } else {
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position='fixed';
+          ta.style.left='-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    copyButtons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const target = btn.getAttribute('data-target');
+        if(target === 'previewFrame'){
+          // copy rendered HTML (srcdoc) if available, fall back to assembled content
+          const srcdoc = previewFrame.srcdoc || assembleSrcDoc(htmlCode.value, cssCode.value, jsCode.value);
+          const ok = await copyText(srcdoc);
+          showToast(ok ? 'Preview HTML copied!' : 'Copy failed!');
+          return;
+        }
+        const el = document.getElementById(target);
+        if(!el){
+          showToast('Nothing to copy!');
+          return;
+        }
+        const ok = await copyText(el.value);
+        showToast(ok ? `${target.toUpperCase()} copied!` : 'Copy failed!');
+      });
+    });
+
+    // -------------------------
+    // Assemble preview srcdoc
+    // -------------------------
+    function assembleSrcDoc(html, css, js){
+      return `
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>${css || ''}</style>
+</head>
+<body>
+${html || ''}
+<script>
+try {
+${js || ''}
+} catch(e){ console && console.error && console.error('Preview script error', e) }
+<\/script>
+</body>
+</html>
+      `.trim();
+    }
+
+    // -------------------------
+    // Refresh preview
+    // -------------------------
+    function refreshPreview(){
+      const src = assembleSrcDoc(htmlCode.value, cssCode.value, jsCode.value);
+      // use srcdoc to sandbox preview; some browsers ignore srcdoc but it's widely supported
+      previewFrame.srcdoc = src;
+    }
+
+    // -------------------------
+    // Generate code from API
+    // -------------------------
+    async function generateCodeFromAPI(topic){
+      try{
+        // call local server (same as your previous design)
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        if(!res.ok){
+          let errText = 'Server error';
+          try { const j = await res.json(); errText = j.error || JSON.stringify(j); } catch(e){ errText = res.statusText || errText }
+          throw new Error(errText);
+        }
+        const payload = await res.json();
+        // Expecting { html: '...', css: '...', js: '...' }
+        return payload;
+      }catch(e){
+        console.error(e);
+        showToast(`Error: ${e.message}. Is '/generate' running?`);
+        return null;
+      }
+    }
+
+    // -------------------------
+    // Generate button handler
+    // -------------------------
+    generateBtn.addEventListener('click', async () => {
+      const topic = topicInput.value.trim();
+      if(!topic){
+        showToast('Please enter a topic!');
+        topicInput.focus();
+        return;
+      }
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generating...';
+      htmlCode.value = 'Connecting to AI... Generating HTML...';
+      cssCode.value = 'Connecting to AI... Generating CSS...';
+      jsCode.value = 'Connecting to AI... Generating JavaScript...';
+
+      const code = await generateCodeFromAPI(topic);
+      if(code){
+        htmlCode.value = code.html || '';
+        cssCode.value = code.css || '';
+        jsCode.value = code.js || '';
+        refreshPreview();
+        showToast('Template Generated Successfully!');
+      } else {
+        htmlCode.value = 'Generation failed. Check console for errors.';
+        cssCode.value = '';
+        jsCode.value = '';
+      }
+
+      generateBtn.disabled = false;
+      generateBtn.textContent = 'Generate Code';
+    });
+
+    // -------------------------
+    // Clear button handler
+    // -------------------------
+    clearBtn.addEventListener('click', () => { 
+      htmlCode.value = '<!-- Generated HTML will appear here -->'; 
+      cssCode.value = '/* Generated CSS will appear here */';
+      jsCode.value = '// Generated JavaScript will appear here'; 
+      refreshPreview(); 
+      autoResizeAll(); 
+      showToast('Cleared!');
+    });
+
+    // -------------------------
+    // Buttons to navigate to pages (or change behavior)
+    // -------------------------
+    aiAssistantBtn.addEventListener('click', () => {
+      // if you have ai.html in project, navigate; otherwise implement modal or other action
+      window.location.href = 'ai.html';
+    });
+    estimationBtn.addEventListener('click', () => {
+      window.location.href = 'estimation.html';
+    });
+
+    // -------------------------
+    // When code textareas change, update preview (if you want live editing)
+    // (Not enabled while generating; but if user edits, preview updates)
+    // -------------------------
+    [htmlCode, cssCode, jsCode].forEach(el => {
+      // Only refresh when readonly is removed; but keep listener in case user toggles readonly in future
+      el.addEventListener('input', () => {
+        refreshPreview();
+      });
+    });
+
+    // -------------------------
+    // Small accessibility: press Enter in topic input triggers Generate
+    // -------------------------
+    topicInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        generateBtn.click();
+      }
+    });
+
+    // -------------------------
+    // Initialize preview with simple placeholder
+    // -------------------------
+    htmlCode.value = '<!-- Generated HTML will appear here -->';
+    cssCode.value = '/* Generated CSS will appear here */';
+    jsCode.value = '// Generated JavaScript will appear here';
+    refreshPreview();
+
+    // -------------------------
+    // Optional: auto-resize textareas for mobile (light)
+    // -------------------------
+    function autoResizeAll(){
+      document.querySelectorAll('textarea.code').forEach(t => {
+        t.style.height = 'auto';
+        t.style.height = Math.max(120, t.scrollHeight + 6) + 'px';
+      });
+    }
+    // call periodically (light) to accommodate dynamic content
+    setInterval(autoResizeAll, 600);
+  </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      margin-top: 50px;
+    }
+
+    #chat-container {
+      width: 400px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+
+    .user {
+      text-align: right;
+      color: blue;
+      margin-bottom: 8px;
+    }
+
+    .bot {
+      text-align: left;
+      color: green;
+      margin-bottom: 8px;
+    }
+
+    #input-area {
+      display: flex;
+    }
+
+    #msg {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid gray;
+    }
+
+    #sendBtn {
+      padding: 10px 15px;
+      margin-left: 10px;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="chat-container">
+  <h2>AI Chatbot</h2>
+  <div id="messages"></div>
+
+  <div id="input-area">
+    <input type="text" id="msg" placeholder="Type your message..." />
+    <button id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script>
+  document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+  async function sendMessage() {
+    const msgInput = document.getElementById("msg");
+    const userMessage = msgInput.value.trim();
+
+    if (userMessage === "") return;
+
+    // Show user message
+    addMessage("user", userMessage);
+    msgInput.value = "";
+
+    // Call backend server.js
+    const response = await fetch("http://localhost:4000/ai", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: userMessage })
+});
+
+
+    const data = await response.json();
+    addMessage("bot", data.reply);
+  }
+
+  function addMessage(type, text) {
+    const chat = document.getElementById("messages");
+    const div = document.createElement("div");
+    div.className = type;
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+</script>
+
+</body>
+</html>
